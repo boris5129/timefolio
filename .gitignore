@@ -1,0 +1,10 @@
+.tools/
+.runtime/
+.env
+node_modules/
+dist/
+.gradle/
+build/
+playwright-report/
+test-results/
+*.log

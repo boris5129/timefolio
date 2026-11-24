@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f4f6">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./ledger.js" defer></script>
+  <script src="./app.js" defer></script>
+  <title>Timefolio</title>
+</head>
+<body>
+  <div class="shell">
+    <aside class="navigation">
+      <button type="button" class="brand" data-go="home" aria-label="Timefolio 홈"><span aria-hidden="true">◷</span> Timefolio</button>
+      <nav aria-label="주 메뉴">
+        <div class="nav-group">
+          <button data-page="home" aria-current="page"><span aria-hidden="true">⌂</span>대시보드</button>
+          <button data-page="register"><span aria-hidden="true">＋</span>활동 등록</button>
+          <button data-page="day"><span aria-hidden="true">◷</span>오늘의 활동</button>
+          <button data-page="week"><span aria-hidden="true">≡</span>주간 활동</button>
+          <button data-page="month"><span aria-hidden="true">▦</span>월간 활동</button>
+        </div>
+        <div class="nav-group secondary-nav">
+          <button data-page="saved"><span aria-hidden="true">↗</span>시간 확보</button>
+          <button data-page="categories"><span aria-hidden="true">◈</span>카테고리</button>
+          <button data-page="settings"><span aria-hidden="true">⚙</span>설정</button>
+        </div>
+      </nav>
+      <p class="local-note">이 브라우저에 기록 저장</p>
+    </aside>
+    <main>
+      <header><div><h1 id="page-title" tabindex="-1">대시보드</h1><p id="page-description"></p></div><button id="add" class="primary" hidden>＋ 카테고리 추가</button></header>
+      <p id="loading" role="status">기록을 불러오는 중입니다.</p>
+      <p id="notice" role="status" hidden></p>
+      <p id="error" role="alert" hidden></p>
+      <div id="dashboard" hidden>
+        <div class="dashboard-top">
+          <section class="usage-overview" aria-labelledby="usage-title">
+            <div class="section-heading"><h2 id="usage-title">오늘 사용한 시간</h2><button class="plain" data-go="day">활동 보기</button></div>
+            <p id="dash-used" class="balance-figure"></p>
+            <div class="usage-progress" aria-hidden="true"><span id="dash-progress"></span></div>
+            <dl class="usage-details">
+              <div><dt>미기록 시간</dt><dd id="dash-unrecorded"></dd></div>
+              <div><dt>예정 활동 시간</dt><dd id="dash-planned"></dd></div>
+            </dl>
+          </section>
+          <section class="asset-overview" aria-labelledby="asset-title">
+            <div class="section-heading"><h2 id="asset-title">오늘의 시간 자산</h2><button class="plain" data-go="saved">기록 보기</button></div>
+            <dl class="asset-details">
+              <div class="saved-asset"><dt>기록한 아낀 시간</dt><dd id="dash-saved"></dd></div>
+              <div><dt>중첩으로 절약</dt><dd id="dash-stacked"></dd></div>
+              <div><dt>재투자한 시간</dt><dd>집계 준비 중</dd></div>
+              <div><dt>재투자 가능 시간</dt><dd>집계 준비 중</dd></div>
+            </dl>
+          </section>
+        </div>
+        <section class="dashboard-timeline surface" aria-labelledby="timeline-heading">
+          <div class="section-heading"><h2 id="timeline-heading">하루 타임라인</h2><button class="primary" data-go="register">활동 등록</button></div>
+          <div class="timeline-axis" aria-hidden="true"><span>00시</span><span>06시</span><span>12시</span><span>18시</span><span>24시</span></div>
+          <div class="timeline-lane"><strong>실제</strong><div class="timeline-rail" id="dash-actual-rail"></div></div>
+          <div class="timeline-lane"><strong>계획</strong><div class="timeline-rail" id="dash-planned-rail"></div></div>
+          <p id="dash-timeline-empty" class="muted" hidden>오늘 기록된 활동이나 계획이 없습니다.</p>
+        </section>
+        <section class="dashboard-agenda surface" aria-labelledby="agenda-heading">
+          <div class="section-heading"><h2 id="agenda-heading">오늘의 활동</h2><button class="plain" data-go="day">전체 보기</button></div>
+          <ul id="dash-agenda"></ul>
+        </section>
+        <div class="dashboard-secondary">
+          <section><h2>진행 중인 목표</h2><p class="muted">목표 관리 기능을 준비 중입니다.</p><button class="plain" data-go="goals">목표 관리 안내</button></section>
+          <section><h2>추천 시간 활용</h2><p class="muted">시간 활용 추천 기능을 준비 중입니다.</p><button class="plain" data-go="wish">하고 싶은 일 안내</button></section>
+        </div>
+      </div>
+      <section id="settings" class="surface settings-screen" hidden>
+        <h2>기록과 환경</h2>
+        <dl class="settings-list"><div><dt>저장 위치</dt><dd>현재 브라우저</dd></div><div><dt>기준 시간대</dt><dd>한국 표준시</dd></div></dl>
+        <div class="settings-actions"><button data-go="categories">카테고리 관리</button><button data-go="account">로그인 및 회원가입 안내</button></div>
+        <h2>시간 관리 기능</h2>
+        <div class="settings-actions"><button data-go="stack">시간 중첩</button><button data-go="invest">시간 재투자</button><button data-go="wish">하고 싶은 일</button><button data-go="goals">목표 관리</button><button data-go="simulate">미래 시뮬레이션</button><button data-go="statistics">통계 및 결산</button></div>
+      </section>
+      <section id="feature-status" class="surface feature-status" hidden>
+        <h2 id="feature-status-title"></h2><p class="muted" id="feature-status-text"></p>
+        <button class="primary" id="feature-action"></button>
+      </section>
+      <section id="date-section" class="toolbar" aria-label="날짜 선택">
+        <div class="date-controls">
+          <button id="prev" aria-label="이전 날짜">‹</button>
+          <input id="date" aria-label="조회 날짜" type="date" min="1901-01-01" max="9998-12-31">
+          <button id="next" aria-label="다음 날짜">›</button>
+          <button id="today">오늘</button>
+        </div>
+        <button id="copy" hidden>전날 활동 복사</button>
+      </section>
+      <section id="register" class="register-sheet" hidden>
+        <h2>등록 방식</h2>
+        <div class="register-options">
+          <button id="register-actual"><strong>실제 활동 추가</strong><span>이미 한 일의 시작과 종료 시각</span></button>
+          <button id="register-plan"><strong>계획 추가</strong><span>앞으로 할 일의 예정 시각</span></button>
+          <button id="register-repeat"><strong>반복 저장</strong><span>수업과 휴식처럼 되풀이되는 활동</span></button>
+        </div>
+        <section class="clock-register">
+          <div class="clock-register-copy">
+            <h3>시계에서 등록</h3>
+            <p class="muted">시작 시각을 누른 뒤 종료 시각과 활동 내용을 입력하세요.</p>
+            <fieldset class="clock-kind"><legend>등록 종류</legend>
+              <label><input type="radio" name="clock-kind" value="actual" checked> 실제 활동</label>
+              <label><input type="radio" name="clock-kind" value="planned"> 계획</label>
+            </fieldset>
+          </div>
+          <div id="register-clock" class="clock-face pick-clock" role="group" aria-label="등록 시작 시각">
+            <div class="pick-clock-center" aria-hidden="true"><span id="clock-register-date"></span><strong>24시간</strong></div>
+          </div>
+        </section>
+        <section id="recurring-section" hidden><h3>무기한 반복 일정</h3><p class="muted">중단하면 위에서 선택한 날짜부터 계획이 표시되지 않습니다.</p><ul id="recurring-list" class="category-list"></ul></section>
+        <div id="quick" hidden><h3>최근 활동으로 등록</h3><div id="quick-items"></div></div>
+      </section>
+      <section id="savings" class="savings">
+        <div><h2 id="saving-label">오늘 아낀 시간</h2><strong id="saving-value">0분</strong></div>
+        <div><p id="saving-note"></p><button id="saving-edit">아낀 시간 기록</button></div>
+      </section>
+      <section id="overlap-summary" class="surface report-section" aria-labelledby="overlap-title" hidden>
+        <div class="heading"><h2 id="overlap-title">활동 중첩과 절약</h2></div>
+        <dl class="report-numbers"><div><dt>자동으로 찾은 중첩</dt><dd id="overlap-total"></dd></div><div><dt>확인한 중첩 절약</dt><dd id="overlap-confirmed"></dd></div></dl>
+        <p id="overlap-message" class="muted"></p>
+        <form id="overlap-form" hidden>
+          <label for="overlap-plan">대체한 별도 계획</label><select id="overlap-plan" required></select>
+          <button class="primary">대체 확인</button>
+        </form>
+        <button id="overlap-clear" hidden>확인 취소</button>
+        <small class="muted">직접 입력한 아낀 시간과 중첩 절약은 별도로 표시됩니다.</small>
+      </section>
+      <section id="saving-history" class="surface" aria-labelledby="saving-history-title" hidden>
+        <h2 id="saving-history-title">최근 절약 기록</h2><ul id="saving-history-list"></ul>
+      </section>
+      <section id="period" hidden>
+        <div id="statistics-picker" class="list-filters statistics-picker" aria-label="결산 기간" hidden>
+          <button type="button" data-statistics="week" aria-pressed="false">주간 결산</button>
+          <button type="button" data-statistics="month" aria-pressed="true">월간 결산</button>
+        </div>
+        <div class="toolbar period-toolbar">
+          <button id="period-prev" aria-label="이전 기간">‹</button>
+          <h2 id="period-title"></h2>
+          <button id="period-next" aria-label="다음 기간">›</button>
+          <button id="period-current">이번 기간</button>
+        </div>
+        <div id="period-totals" class="period-totals"></div>
+        <div id="period-grid" class="period-grid" aria-label="날짜별 활동"></div>
+        <p class="calendar-legend muted"><span class="saturday">토요일</span><span class="holiday">일요일·공휴일</span> 한국 공휴일은 2026~2027년 달력 기준</p>
+      </section>
+      <p id="holiday-warning" class="muted" hidden>이 연도의 공휴일 달력이 아직 없어 해당 날짜의 공휴일 제외를 적용할 수 없습니다.</p>
+      <section id="summary" class="metrics" aria-label="하루 시간 요약"></section>
+      <section id="category-budget" class="panel budget-panel" aria-labelledby="budget-title">
+        <div class="heading"><h2 id="budget-title">카테고리별 시간 예산</h2><button id="budget-settings">목표 설정</button></div>
+        <ul id="budget-rows" class="budget-rows"></ul>
+      </section>
+      <section id="daily" class="panel">
+        <div class="day-clock-layout">
+          <div id="day-clock" class="clock-face day-clock" role="img" aria-label="24시간 생활계획표">
+            <div id="clock-actual" class="clock-ring actual-ring"></div>
+            <div id="clock-planned" class="clock-ring planned-ring"></div>
+            <div class="day-clock-center" aria-hidden="true"><strong id="clock-date"></strong><span id="clock-total"></span></div>
+          </div>
+          <div class="clock-key">
+            <h2>생활계획표</h2>
+            <p>바깥쪽은 실제 활동, 안쪽은 계획</p>
+            <ul id="clock-categories"></ul>
+          </div>
+        </div>
+      </section>
+      <section id="day-review" class="surface report-section" aria-labelledby="review-title" hidden>
+        <h2 id="review-title">하루 돌아보기</h2>
+        <ul id="review-items"></ul>
+      </section>
+      <section id="activity-list" class="panel">
+        <div class="heading detail-heading"><h2>활동 내역</h2><span id="count"></span></div>
+        <div class="list-filters" aria-label="활동 종류 필터">
+          <button type="button" data-filter="all" aria-pressed="true">전체</button>
+          <button type="button" data-filter="actual" aria-pressed="false">실제만</button>
+          <button type="button" data-filter="planned" aria-pressed="false">계획만</button>
+        </div>
+        <div id="bulk-actions" class="bulk-actions" hidden>
+          <button id="select-mode" aria-pressed="false">활동 선택</button>
+          <button id="select-visible" hidden>표시된 활동 모두 선택</button>
+          <button id="delete-selected" hidden>선택 삭제</button>
+          <button id="delete-day">이 날짜 전체 삭제</button>
+        </div>
+        <div id="entries"></div>
+      </section>
+      <section id="categories" class="panel" hidden><h2>활동 카테고리</h2><ul id="category-list" class="category-list"></ul></section>
+    </main>
+  </div>
+  <dialog id="editor" aria-labelledby="editor-title">
+    <div class="heading"><h2 id="editor-title"></h2><button id="close-editor" type="button" aria-label="닫기">×</button></div>
+    <form id="edit-form">
+      <div id="entry-fields">
+        <label>활동 이름<input name="title" maxlength="100" required></label>
+        <div class="fields">
+          <label>카테고리<select name="categoryId" required></select></label>
+          <label>기록 종류<select name="kind"><option value="actual">실제 활동</option><option value="planned">예정된 활동</option></select></label>
+        </div>
+        <div class="fields">
+          <label>시작 시각<input name="start" type="datetime-local" min="1901-01-01T00:00" max="9998-12-31T23:59" required></label>
+          <label>종료 시각<input name="end" type="datetime-local" min="1901-01-01T00:00" max="9998-12-31T23:59" required></label>
+        </div>
+        <label>메모<textarea name="memo" maxlength="500" rows="3"></textarea></label>
+      </div>
+      <div id="category-fields" hidden>
+        <label>카테고리 이름<input name="name" maxlength="40" required></label>
+        <div class="fields"><label>색상<input name="color" type="color" value="#4a47d7"></label><label>아이콘<select name="icon">
+          <option value="●">원</option><option value="☾">달</option><option value="▤">책</option><option value="◆">마름모</option><option value="★">별</option><option value="✿">꽃</option><option value="♫">음표</option>
+        </select></label></div>
+        <label>하루 목표 (분)<input name="budgetMinutes" type="number" min="1" max="1440" step="1" aria-describedby="budget-help"></label>
+        <p id="budget-help" class="muted">예: 2시간은 120분. 비워 두면 그날의 계획 시간과 비교합니다.</p>
+      </div>
+      <p id="edit-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" data-close="editor">취소</button><button class="primary" type="submit">저장</button></div>
+    </form>
+  </dialog>
+  <dialog id="repeat" aria-labelledby="repeat-title">
+    <div class="heading"><h2 id="repeat-title">활동 반복 저장</h2></div>
+    <p id="repeat-date" class="muted"></p>
+    <form id="repeat-form">
+      <div class="fields">
+        <label>반복 시작<input name="start" type="time" value="09:00" required></label>
+        <label>반복 종료<input name="end" type="time" value="13:00" required></label>
+      </div>
+      <label>반복 주기<select name="frequency">
+        <option value="once">선택한 날짜만</option><option value="daily">매일</option>
+        <option value="weekdays">평일 (월~금)</option><option value="weekly">매주 선택한 요일</option>
+        <option value="monthly">매월 같은 날짜</option>
+      </select></label>
+      <div id="repeat-options" class="clock-kind" hidden>
+        <label><input name="indefinite" type="checkbox" disabled> 무기한 반복</label>
+        <label><input name="skipHolidays" type="checkbox" disabled> 한국 공휴일 제외</label>
+      </div>
+      <p id="repeat-holiday-note" class="muted" hidden>공휴일·대체공휴일은 2026~2027년 달력에 적용됩니다. 다른 연도는 공휴일을 제외하지 않습니다.</p>
+      <label id="repeat-until" hidden>반복 종료 날짜<input name="until" type="date" max="9998-12-31" disabled required></label>
+      <fieldset id="repeat-weekdays" class="clock-kind repeat-weekdays" hidden disabled><legend>반복할 요일</legend>
+        <label><input name="weekday" type="checkbox" value="1">월</label>
+        <label><input name="weekday" type="checkbox" value="2">화</label>
+        <label><input name="weekday" type="checkbox" value="3">수</label>
+        <label><input name="weekday" type="checkbox" value="4">목</label>
+        <label><input name="weekday" type="checkbox" value="5">금</label>
+        <label><input name="weekday" type="checkbox" value="6">토</label>
+        <label><input name="weekday" type="checkbox" value="0">일</label>
+      </fieldset>
+      <div id="repeat-month" hidden>
+        <label>매월 반복할 날짜 (일)<input name="monthDay" type="number" min="1" max="31" step="1" disabled required></label>
+        <p class="muted">선택한 날짜가 없는 달은 건너뜁니다.</p>
+      </div>
+      <p id="repeat-schedule-note" class="muted" hidden>조건에 맞는 날짜에 계획을 추가합니다. 저장된 계획은 날짜별로 수정하거나 삭제할 수 있습니다.</p>
+      <label id="repeat-kind">반복 기록 종류<select name="kind"><option value="planned">예정된 활동</option><option value="actual">실제 활동</option></select></label>
+      <p class="muted">아래 순서로 반복합니다. 마지막 활동은 종료 시각에 맞춰 줄어들 수 있습니다.</p>
+      <div id="repeat-steps"></div>
+      <button id="repeat-add-step" type="button">＋ 묶음에 활동 추가</button>
+      <p id="repeat-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" data-close="repeat">취소</button><button class="primary" type="submit">반복 저장</button></div>
+    </form>
+  </dialog>
+  <template id="repeat-step">
+    <fieldset class="repeat-step">
+      <legend></legend>
+      <label>활동 이름<input name="title" maxlength="100" required></label>
+      <div class="fields">
+        <label>카테고리<select name="categoryId" required></select></label>
+        <label>활동 길이 (분)<input name="length" type="number" min="1" max="1440" step="1" required></label>
+      </div>
+      <button type="button" data-remove-step>묶음에서 빼기</button>
+    </fieldset>
+  </template>
+  <dialog id="saving-dialog" aria-labelledby="saving-dialog-title">
+    <h2 id="saving-dialog-title">아낀 시간 기록</h2>
+    <p class="muted">실제로 줄였다고 확인한 시간의 하루 합계를 입력하세요. 0분으로 저장하면 기록을 지울 수 있습니다.</p>
+    <form id="saving-form">
+      <label>아낀 시간 (분)<input name="minutes" type="number" min="0" max="1440" step="1" required></label>
+      <label>어떻게 아꼈나요?<textarea name="note" rows="3" maxlength="300"></textarea></label>
+      <p id="saving-error" role="alert" hidden></p>
+      <div class="actions"><button type="button" data-close="saving-dialog">취소</button><button class="primary">저장</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirm" aria-labelledby="confirm-title">
+    <h2 id="confirm-title">삭제 확인</h2><p id="confirm-message"></p><p id="confirm-error" role="alert" hidden></p>
+    <form id="delete-form" class="actions"><button type="button" data-close="confirm">취소</button><button id="confirm-submit" class="danger" type="submit">삭제</button></form>
+  </dialog>
+</body>
+</html>

@@ -1,0 +1,36 @@
+CREATE TABLE users (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(254) NOT NULL UNIQUE,
+    password_hash VARCHAR(60) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8mb4;
+CREATE TABLE categories (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(40) NOT NULL,
+    color CHAR(7) NOT NULL,
+    icon VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE (user_id, name),
+    UNIQUE (user_id, id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+) DEFAULT CHARSET=utf8mb4;
+CREATE TABLE activity_entries (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    started_at DATETIME(6) NOT NULL,
+    ended_at DATETIME(6) NOT NULL,
+    kind VARCHAR(10) NOT NULL,
+    memo VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE (user_id, started_at, ended_at, kind, title, category_id),
+    INDEX (user_id, ended_at),
+    CHECK (ended_at > started_at),
+    CHECK (kind IN ('ACTUAL','PLANNED')),
+    FOREIGN KEY (user_id, category_id) REFERENCES categories(user_id, id)
+) DEFAULT CHARSET=utf8mb4;

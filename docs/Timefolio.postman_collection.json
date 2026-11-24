@@ -1,0 +1,339 @@
+{
+  "info": {
+    "name": "Timefolio Phase 1",
+    "description": "로컬 서버에서 사용합니다. email과 password를 직접 입력한 뒤 CSRF 조회, 가입, 로그인, CSRF 재조회 순으로 호출하세요. 로그아웃 뒤에도 CSRF를 재조회하세요.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080"
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "date",
+      "value": "2026-11-24"
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "entryId",
+      "value": ""
+    },
+    {
+      "key": "csrfHeader",
+      "value": "X-CSRF-TOKEN"
+    },
+    {
+      "key": "csrfToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "CSRF 토큰 갱신",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/auth/csrf"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('csrfHeader', data.header);",
+              "pm.collectionVariables.set('csrfToken', data.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "회원가입",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "로그인",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "현재 사용자",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/auth/me"
+      }
+    },
+    {
+      "name": "카테고리 목록",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/categories"
+      }
+    },
+    {
+      "name": "카테고리 추가",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/categories",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"독서\",\n  \"color\": \"#4f46e5\",\n  \"icon\": \"book\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('categoryId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "카테고리 수정",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/categories/{{categoryId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"독서\",\n  \"color\": \"#4f46e5\",\n  \"icon\": \"book\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "카테고리 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/categories/{{categoryId}}"
+      }
+    },
+    {
+      "name": "날짜별 기록",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/entries?date={{date}}"
+      }
+    },
+    {
+      "name": "최근 활동",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/entries/recent"
+      }
+    },
+    {
+      "name": "활동 추가",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/entries",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"책 읽기\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"start\": \"{{date}}T09:00\",\n  \"end\": \"{{date}}T10:00\",\n  \"kind\": \"ACTUAL\",\n  \"memo\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set('entryId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "활동 수정",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/entries/{{entryId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"책 읽기\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"start\": \"{{date}}T09:00\",\n  \"end\": \"{{date}}T10:00\",\n  \"kind\": \"ACTUAL\",\n  \"memo\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "활동 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/entries/{{entryId}}"
+      }
+    },
+    {
+      "name": "전날 활동 복사",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/entries/copy",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"date\": \"{{date}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "로그아웃",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "{{csrfHeader}}",
+            "value": "{{csrfToken}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/logout"
+      }
+    }
+  ]
+}
